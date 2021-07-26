@@ -2,7 +2,9 @@
   <div class="editor-canvas-container">
     <div class="tools">tools</div>
     <div class="canvas-container">
-      <div class="canvas">canvas</div>
+      <div class="canvas">
+        <canvas width="1920" height="1080"></canvas>
+      </div>
       <div calss="status-bar">status-bar</div>
     </div>
   </div>
@@ -20,8 +22,7 @@ export default defineComponent({
 .editor-canvas-container {
   display: grid;
   grid-template-columns: 50px 1fr;
-  grid-template-rows: 1fr;
-
+  grid-template-rows: minmax(0, 1fr);
   width: 100%;
   height: 100%;
 }
@@ -38,14 +39,19 @@ export default defineComponent({
 
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr 30px;
+  grid-template-rows: minmax(0, 1fr) 30px;
 }
 
 .canvas-container > .canvas {
   grid-column: 1;
   grid-row: 1;
-
+  padding: 10px;
   overflow: scroll;
+}
+
+.canvas > canvas {
+  background: black;
+  vertical-align: bottom;
 }
 
 .canvas-container > .status-bar {

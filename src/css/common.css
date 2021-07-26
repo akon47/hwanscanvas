@@ -23,15 +23,17 @@
   flex-grow: 1;
   flex-shrink: 1;
   background: #454545;
+  min-height: 0px;
+  min-width: 0px;
 }
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   width: 15px;
   height: 15px;
+  scroll-margin-bottom: 0;
 }
 
 ::-webkit-scrollbar-track {
-  border-radius: 10px;
   background: rgba(0, 0, 0, 0.1);
 }
 
@@ -50,4 +52,4 @@
 
 ::-webkit-scrollbar-corner {
   background-color: transparent;
-}
+} */
