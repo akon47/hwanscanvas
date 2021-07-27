@@ -2,10 +2,22 @@
   <div class="editor-canvas-container">
     <div class="tools">tools</div>
     <div class="canvas-container">
-      <div class="canvas">
-        <canvas width="1920" height="1080"></canvas>
+      <div class="canvas-wrapper" ref="canvasWrapper">
+        <canvas width="1920" height="1080" :style="canvasStyle"></canvas>
       </div>
-      <div calss="status-bar">status-bar</div>
+      <div class="status-bar">
+        <div class="scale-factor">
+          <span> {{ scaleFactorPercent }}% </span>
+          <input
+            type="range"
+            v-model="scaleFactorPercent"
+            min="1"
+            max="200"
+            :disabled="autoScaleFactor"
+          />
+          <input type="checkbox" v-model="autoScaleFactor" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -13,8 +25,77 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 
+interface CanvasStyle {
+  width: string;
+  height: string;
+  marginLeft: string;
+  marginTop: string;
+}
+
 export default defineComponent({
   name: "EditorCanvas",
+  data() {
+    return {
+      scaleFactor: 0.8,
+      marginLeft: 0,
+      marginTop: 0,
+      width: 1920,
+      height: 1080,
+      autoScaleFactor: true,
+    };
+  },
+  computed: {
+    canvasStyle(): CanvasStyle {
+      return {
+        width: `${this.width * this.scaleFactor}px`,
+        height: `${this.height * this.scaleFactor}px`,
+        marginLeft: `${this.marginLeft}px`,
+        marginTop: `${this.marginTop}px`,
+      };
+    },
+    scaleFactorPercent: {
+      get(): number {
+        return Math.floor(this.scaleFactor * 100.0);
+      },
+      set(newValue: number) {
+        this.scaleFactor = newValue / 100.0;
+      },
+    },
+  },
+  watch: {
+    scaleFactor() {
+      this.arrangeCanvas();
+    },
+    autoScaleFactor() {
+      this.arrangeCanvas();
+    },
+  },
+  methods: {
+    handleWindowResize() {
+      this.arrangeCanvas();
+    },
+    arrangeCanvas() {
+      const { clientWidth, clientHeight } = this.$refs.canvasWrapper as Element;
+      if (this.autoScaleFactor) {
+        this.scaleFactor =
+          Math.floor(
+            Math.min(
+              clientWidth / (this.width + 0),
+              clientHeight / (this.height + 0)
+            ) * 100.0
+          ) / 100.0;
+      }
+      this.marginLeft = (clientWidth - this.scaleFactor * this.width) / 2.0;
+      this.marginTop = (clientHeight - this.scaleFactor * this.height) / 2.0;
+    },
+  },
+  mounted() {
+    window.addEventListener("resize", this.handleWindowResize);
+    this.handleWindowResize();
+  },
+  beforeUnmount() {
+    window.addEventListener("resize", this.handleWindowResize);
+  },
 });
 </script>
 
@@ -42,21 +123,33 @@ export default defineComponent({
   grid-template-rows: minmax(0, 1fr) 30px;
 }
 
-.canvas-container > .canvas {
+.canvas-container > .canvas-wrapper {
   grid-column: 1;
   grid-row: 1;
-  padding: 10px;
+  padding: 0px;
   overflow: scroll;
 }
 
-.canvas > canvas {
+.canvas-wrapper > canvas {
   background: black;
   vertical-align: bottom;
+  transform-origin: 0 0;
+  width: 100px;
+  height: 100px;
 }
 
 .canvas-container > .status-bar {
   grid-column: 1;
   grid-row: 2;
   background: #878787;
+  display: flex;
+
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.status-bar > .scale-factor {
+  flex-grow: 0;
+  flex-shrink: 1;
 }
 </style>
