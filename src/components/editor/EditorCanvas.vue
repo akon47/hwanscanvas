@@ -3,7 +3,12 @@
     <div class="tools">tools</div>
     <div class="canvas-container">
       <div class="canvas-wrapper" ref="canvasWrapper">
-        <canvas width="1920" height="1080" :style="canvasStyle"></canvas>
+        <canvas
+          ref="canvas"
+          width="1920"
+          height="1080"
+          :style="canvasStyle"
+        ></canvas>
       </div>
       <div class="status-bar">
         <div class="scale-factor">
@@ -36,7 +41,7 @@ export default defineComponent({
   name: "EditorCanvas",
   data() {
     return {
-      scaleFactor: 0.8,
+      scaleFactor: 1,
       marginLeft: 0,
       marginTop: 0,
       width: 1920,
@@ -92,6 +97,8 @@ export default defineComponent({
   mounted() {
     window.addEventListener("resize", this.handleWindowResize);
     this.handleWindowResize();
+
+    const canvas = this.$refs.canvas as HTMLCanvasElement;
   },
   beforeUnmount() {
     window.addEventListener("resize", this.handleWindowResize);
