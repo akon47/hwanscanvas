@@ -10,10 +10,14 @@ export class SolidColorBrush extends BaseBrush {
   }
 
   getStyle(): string {
-    return `#${this.color.r.toString(16 + 0x100).substr(-2)}${this.color.g
-      .toString(16 + 0x100)
-      .substr(-2)}${this.color.b.toString(16 + 0x100).substr(-2)}${this.color.a
-      .toString(16 + 0x100)
+    return `#${(this.color.r + 0x100).toString(16).substr(-2)}${(
+      this.color.g + 0x100
+    )
+      .toString(16)
+      .substr(-2)}${(this.color.b + 0x100).toString(16).substr(-2)}${(
+      this.color.a + 0x100
+    )
+      .toString(16)
       .substr(-2)}`;
   }
 }

@@ -16,4 +16,8 @@ export class Page {
       value.draw(context);
     }
   }
+
+  addShape(shape: BaseShape): void {
+    this.shapes.push(shape);
+  }
 }

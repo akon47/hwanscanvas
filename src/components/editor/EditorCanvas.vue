@@ -29,6 +29,8 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { Page } from "../../hwans-canvas/page";
+import { RectangleShape } from "../../hwans-canvas/shapes/rectangleShape";
 
 interface CanvasStyle {
   width: string;
@@ -99,6 +101,17 @@ export default defineComponent({
     this.handleWindowResize();
 
     const canvas = this.$refs.canvas as HTMLCanvasElement;
+
+    let page = new Page(1920, 1080);
+
+    for (let i = 0; i < 100; i++) {
+      const width = Math.random() * 190 + 10;
+      const height = Math.random() * 190 + 10;
+      const x = Math.random() * (1920 - width);
+      const y = Math.random() * (1080 - height);
+      page.addShape(new RectangleShape(x, y, width, height));
+    }
+    page.draw(canvas.getContext("2d") as CanvasRenderingContext2D);
   },
   beforeUnmount() {
     window.addEventListener("resize", this.handleWindowResize);
