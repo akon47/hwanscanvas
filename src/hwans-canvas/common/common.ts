@@ -42,6 +42,32 @@ export class Rect {
   getCenter(): Point {
     return new Point(this.getCenterX(), this.getCenterY());
   }
+
+  contains(point: Point): boolean {
+    if (
+      point.x >= this.getLeft() &&
+      point.x < this.getRight() &&
+      point.y >= this.getTop() &&
+      point.y < this.getBottom()
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  intersectsWith(rect: Rect): boolean {
+    if (
+      rect.getLeft() <= this.getRight() &&
+      rect.getRight() >= this.getLeft() &&
+      rect.getTop() <= this.getBottom() &&
+      rect.getBottom() >= this.getTop()
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 
 export class Color {

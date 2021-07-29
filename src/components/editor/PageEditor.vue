@@ -4,7 +4,10 @@
     <div class="canvas-container">
       <div class="canvas-wrapper" ref="canvasWrapper">
         <div :style="canvasStyle">
-          <page-editor-canvas :page="page"></page-editor-canvas>
+          <page-editor-canvas
+            :page="page"
+            :scaleFactor="scaleFactor"
+          ></page-editor-canvas>
         </div>
       </div>
       <div class="status-bar">

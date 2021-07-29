@@ -5,20 +5,22 @@ export class Page {
   private height: number;
   private shapes: Array<BaseShape>;
 
-  private renderTargetContext: CanvasRenderingContext2D | null;
+  private renderTargetContext?: CanvasRenderingContext2D;
   private updateCount: number;
 
   public constructor(width: number, height: number) {
     this.width = width;
     this.height = height;
     this.shapes = [];
-    this.renderTargetContext = null;
+    this.renderTargetContext = undefined;
     this.updateCount = 0;
   }
 
   public draw(context: CanvasRenderingContext2D): void {
     for (const shape of this.shapes) {
+      context.save();
       shape.draw(context);
+      context.restore();
     }
   }
 
@@ -36,6 +38,14 @@ export class Page {
     } else {
       return false;
     }
+  }
+
+  public getShapeCount(): number {
+    return this.shapes.length;
+  }
+
+  public getShape(index: number): BaseShape {
+    return this.shapes[index];
   }
 
   public getWidth(): number {
@@ -56,7 +66,7 @@ export class Page {
   }
 
   public setRenderTarget(canvas?: HTMLCanvasElement): void {
-    let context = null;
+    let context = undefined;
     if (canvas) {
       context = canvas.getContext("2d") as CanvasRenderingContext2D;
     }

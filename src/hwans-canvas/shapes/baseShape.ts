@@ -1,6 +1,6 @@
 import { BaseBrush } from "../brushes/baseBrush";
 import { SolidColorBrush } from "../brushes/solidColorBrush";
-import { Color } from "../common/common";
+import { Color, Rect, Point } from "../common/common";
 
 export abstract class BaseShape {
   protected fillBrush: BaseBrush;
@@ -16,6 +16,13 @@ export abstract class BaseShape {
   }
 
   abstract draw(context: CanvasRenderingContext2D): void;
+
+  abstract drawHandle(context: CanvasRenderingContext2D): void;
+  abstract getHandleCount(): number;
+  abstract getHandle(handleIndex: number): Point;
+
+  abstract contains(point: Point): boolean;
+  abstract intersectsWith(rect: Rect): boolean;
 
   protected callOnInvalidated(): void {
     this.oninvalidated?.();
