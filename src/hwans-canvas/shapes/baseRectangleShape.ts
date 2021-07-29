@@ -33,14 +33,22 @@ export abstract class BaseRectangleShape extends BaseShape {
     );
   }
 
-  drawHandle(context: CanvasRenderingContext2D): void {
-    context.fillStyle = "red";
-    context.strokeStyle = "#fff";
-    context.lineWidth = 2;
+  drawHandle(context: CanvasRenderingContext2D, scaleFactor?: number): void {
+    context.fillStyle = "#f00";
+    context.strokeStyle = "#f00";
+    context.lineWidth = 2 / (scaleFactor || 1);
+
+    const handleWidth = 5 / (scaleFactor || 1);
 
     context.strokeRect(this.x, this.y, this.width, this.height);
     for (let i = 0; i < this.getHandleCount(); i++) {
       const handlePoint = this.getHandle(i);
+      context.fillRect(
+        handlePoint.x - handleWidth,
+        handlePoint.y - handleWidth,
+        handleWidth * 2,
+        handleWidth * 2
+      );
     }
   }
 
@@ -53,15 +61,15 @@ export abstract class BaseRectangleShape extends BaseShape {
     switch (handleIndex) {
       case 0:
         point.x = this.x;
-        point.x = this.y;
+        point.y = this.y;
         break;
       case 1:
         point.x = this.x + this.width / 2;
-        point.x = this.y;
+        point.y = this.y;
         break;
       case 2:
         point.x = this.x + this.width;
-        point.x = this.y;
+        point.y = this.y;
         break;
       case 3:
         point.x = this.x + this.width;
@@ -85,5 +93,11 @@ export abstract class BaseRectangleShape extends BaseShape {
         break;
     }
     return point;
+  }
+
+  offset(x?: number, y?: number): void {
+    this.x += x || 0;
+    this.y += y || 0;
+    this.invalidate();
   }
 }

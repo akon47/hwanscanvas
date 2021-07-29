@@ -4,10 +4,20 @@ export abstract class BaseEditorTool {
   private renderTargetContext?: CanvasRenderingContext2D;
   private updateCount: number;
 
+  protected scaleFactor: number;
+
   public constructor() {
     this.renderTargetContext = undefined;
     this.updateCount = 0;
+    this.scaleFactor = 1;
   }
+
+  public setScaleFactor(scaleFactor: number): void {
+    this.scaleFactor = scaleFactor;
+    this.invalidate();
+  }
+
+  public abstract onLoaded(): void;
 
   public abstract onMouseDown(
     page: Page,

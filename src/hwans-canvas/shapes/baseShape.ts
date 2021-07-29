@@ -17,14 +17,19 @@ export abstract class BaseShape {
 
   abstract draw(context: CanvasRenderingContext2D): void;
 
-  abstract drawHandle(context: CanvasRenderingContext2D): void;
+  abstract drawHandle(
+    context: CanvasRenderingContext2D,
+    scaleFactor?: number
+  ): void;
   abstract getHandleCount(): number;
   abstract getHandle(handleIndex: number): Point;
 
   abstract contains(point: Point): boolean;
   abstract intersectsWith(rect: Rect): boolean;
 
-  protected callOnInvalidated(): void {
+  abstract offset(x?: number, y?: number): void;
+
+  protected invalidate(): void {
     this.oninvalidated?.();
   }
 }

@@ -81,8 +81,12 @@ export default defineComponent({
         if (newTool) {
           const canvas = this.$refs.editorCanvas as HTMLCanvasElement;
           newTool.setRenderTarget(canvas);
+          newTool.setScaleFactor(this.scaleFactor);
         }
       }
+    },
+    scaleFactor() {
+      this.selectedTool.setScaleFactor(this.scaleFactor);
     },
   },
   methods: {
@@ -113,31 +117,29 @@ export default defineComponent({
 
       const editorCanvas = this.$refs.editorCanvas as HTMLCanvasElement;
       if (editorCanvas) {
-        editorCanvas.onmousemove = (e) => {
+        editorCanvas.onpointermove = (e: PointerEvent) => {
           this.mouseMove(
             e.offsetX / this.scaleFactor,
             e.offsetY / this.scaleFactor,
             e.buttons
           );
         };
-        editorCanvas.onmousedown = (e) => {
+        editorCanvas.onpointerdown = (e: PointerEvent) => {
+          editorCanvas.setPointerCapture(e.pointerId);
           this.mouseDown(
             e.offsetX / this.scaleFactor,
             e.offsetY / this.scaleFactor,
             e.buttons
           );
         };
-        editorCanvas.onmouseup = (e) => {
-          this.mouseUp(
-            e.offsetX / this.scaleFactor,
-            e.offsetY / this.scaleFactor,
-            e.buttons
-          );
-        };
-        editorCanvas.onmouseleave = () => {
-          if (this.page) {
-            this.selectedTool.onMouseUp(this.page, 0, 0, 0);
-            this.editorCursor = this.selectedTool.getCursor();
+        editorCanvas.onpointerup = (e: PointerEvent) => {
+          if (editorCanvas.hasPointerCapture(e.pointerId)) {
+            this.mouseUp(
+              e.offsetX / this.scaleFactor,
+              e.offsetY / this.scaleFactor,
+              e.buttons
+            );
+            editorCanvas.releasePointerCapture(e.pointerId);
           }
         };
       }

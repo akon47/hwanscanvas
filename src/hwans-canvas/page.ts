@@ -76,6 +76,12 @@ export class Page {
 
   public invalidate(): void {
     if (this.renderTargetContext && this.updateCount <= 0) {
+      this.renderTargetContext.clearRect(
+        0,
+        0,
+        this.renderTargetContext.canvas.width,
+        this.renderTargetContext.canvas.height
+      );
       this.draw(this.renderTargetContext);
     }
   }

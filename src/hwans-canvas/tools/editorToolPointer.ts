@@ -20,6 +20,8 @@ export class EditorToolPointer extends BaseEditorTool {
   private cursor: string;
   private selectionBoxPoint1: Point;
   private selectionBoxPoint2: Point;
+  private downPoint: Point;
+  private movePoint: Point;
   private selectionMode: SelectionMode;
   private selectedShapes: Array<BaseShape>;
 
@@ -27,29 +29,39 @@ export class EditorToolPointer extends BaseEditorTool {
     super();
     this.cursor = "default";
     this.selectionMode = SelectionMode.None;
-    this.selectionBoxPoint1 = new Point(0, 0);
-    this.selectionBoxPoint2 = new Point(0, 0);
+    this.selectionBoxPoint1 = new Point();
+    this.selectionBoxPoint2 = new Point();
+    this.downPoint = new Point();
+    this.movePoint = new Point();
     this.selectedShapes = [];
   }
 
+  public onLoaded(): void {
+    this.cursor = "default";
+    this.selectedShapes = [];
+    this.selectionMode = SelectionMode.None;
+  }
+
   public onMouseDown(page: Page, x: number, y: number, buttons: number): void {
-    const cursorPoint = new Point(x, y);
+    this.downPoint = new Point(x, y);
 
     if (buttons == 1) {
-      const hitInfo = this.makeHitTest(page, cursorPoint);
+      const hitInfo = this.makeHitTest(page, this.downPoint);
       if (hitInfo.shape) {
         if (hitInfo.handleIndex >= 0) {
           console.log("handle down");
           this.selectionMode = SelectionMode.HandleMove;
         } else {
-          this.selectedShapes = [hitInfo.shape];
+          if (this.selectedShapes.indexOf(hitInfo.shape) < 0) {
+            this.selectedShapes = [hitInfo.shape];
+          }
           this.selectionMode = SelectionMode.ShapeMove;
         }
       } else {
         this.selectedShapes = [];
         this.selectionMode = SelectionMode.GroupSelection;
-        this.selectionBoxPoint1 = cursorPoint;
-        this.selectionBoxPoint2 = cursorPoint;
+        this.selectionBoxPoint1 = this.downPoint;
+        this.selectionBoxPoint2 = this.downPoint;
       }
     }
 
@@ -57,23 +69,24 @@ export class EditorToolPointer extends BaseEditorTool {
   }
 
   public onMouseMove(page: Page, x: number, y: number, buttons: number): void {
-    const cursorPoint = new Point(x, y);
+    this.movePoint = new Point(x, y);
 
-    const hitInfo = this.makeHitTest(page, cursorPoint);
     switch (this.selectionMode) {
-      case SelectionMode.None:
+      case SelectionMode.None: {
+        const hitInfo = this.makeHitTest(page, this.movePoint);
         if (buttons == 0) {
           if (hitInfo.shape) {
-            this.cursor = "pointer";
+            this.cursor = "all-scroll";
           } else {
             this.cursor = "default";
           }
         }
         break;
+      }
       case SelectionMode.GroupSelection:
         if (buttons == 1) {
           this.cursor = "default";
-          this.selectionBoxPoint2 = cursorPoint;
+          this.selectionBoxPoint2 = this.movePoint;
         }
         break;
       case SelectionMode.ShapeMove:
@@ -86,11 +99,11 @@ export class EditorToolPointer extends BaseEditorTool {
   public onMouseUp(page: Page, x: number, y: number, buttons: number): void {
     const cursorPoint = new Point(x, y);
 
-    const selectionRect = this.getSelectionRect();
     switch (this.selectionMode) {
       case SelectionMode.None:
         break;
-      case SelectionMode.GroupSelection:
+      case SelectionMode.GroupSelection: {
+        const selectionRect = this.getSelectionRect();
         this.selectedShapes = [];
         for (let i = 0; i < page.getShapeCount(); i++) {
           const shape = page.getShape(i);
@@ -99,6 +112,17 @@ export class EditorToolPointer extends BaseEditorTool {
           }
         }
         break;
+      }
+      case SelectionMode.ShapeMove: {
+        const dx = cursorPoint.x - this.downPoint.x;
+        const dy = cursorPoint.y - this.downPoint.y;
+        if (dx != 0 || dy != 0) {
+          for (const shape of this.selectedShapes) {
+            shape.offset(dx, dy);
+          }
+        }
+        break;
+      }
     }
 
     this.selectionMode = SelectionMode.None;
@@ -123,16 +147,16 @@ export class EditorToolPointer extends BaseEditorTool {
 
     for (const shape of this.selectedShapes) {
       context.save();
-      shape.drawHandle(context);
+      shape.drawHandle(context, this.scaleFactor);
       context.restore();
     }
 
-    const selectionRect = this.getSelectionRect();
     switch (this.selectionMode) {
-      case SelectionMode.GroupSelection:
+      case SelectionMode.GroupSelection: {
+        const selectionRect = this.getSelectionRect();
         context.fillStyle = "#c8c8c850";
         context.strokeStyle = "#fff";
-        context.lineWidth = 2;
+        context.lineWidth = 2 / this.scaleFactor;
 
         context.fillRect(
           selectionRect.x,
@@ -146,8 +170,20 @@ export class EditorToolPointer extends BaseEditorTool {
           selectionRect.width,
           selectionRect.height
         );
-
         break;
+      }
+      case SelectionMode.ShapeMove: {
+        const dx = this.movePoint.x - this.downPoint.x;
+        const dy = this.movePoint.y - this.downPoint.y;
+        if (dx != 0 || dy != 0) {
+          context.translate(dx, dy);
+          context.globalAlpha = 0.5;
+          for (const shape of this.selectedShapes) {
+            shape.draw(context);
+          }
+        }
+        break;
+      }
     }
   }
 
