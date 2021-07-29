@@ -3,12 +3,9 @@
     <div class="tools">tools</div>
     <div class="canvas-container">
       <div class="canvas-wrapper" ref="canvasWrapper">
-        <canvas
-          ref="canvas"
-          width="1920"
-          height="1080"
-          :style="canvasStyle"
-        ></canvas>
+        <div :style="canvasStyle">
+          <page-editor-canvas :page="page"></page-editor-canvas>
+        </div>
       </div>
       <div class="status-bar">
         <div class="scale-factor">
@@ -29,8 +26,8 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import PageEditorCanvas from "./PageEditorCanvas.vue";
 import { Page } from "../../hwans-canvas/page";
-import { RectangleShape } from "../../hwans-canvas/shapes/rectangleShape";
 
 interface CanvasStyle {
   width: string;
@@ -40,22 +37,24 @@ interface CanvasStyle {
 }
 
 export default defineComponent({
-  name: "EditorCanvas",
+  components: { PageEditorCanvas },
+  name: "PageEditor",
+  props: {
+    page: Page,
+  },
   data() {
     return {
       scaleFactor: 1,
       marginLeft: 0,
       marginTop: 0,
-      width: 1920,
-      height: 1080,
       autoScaleFactor: true,
     };
   },
   computed: {
     canvasStyle(): CanvasStyle {
       return {
-        width: `${this.width * this.scaleFactor}px`,
-        height: `${this.height * this.scaleFactor}px`,
+        width: `${this.pageWidth * this.scaleFactor}px`,
+        height: `${this.pageHeight * this.scaleFactor}px`,
         marginLeft: `${this.marginLeft}px`,
         marginTop: `${this.marginTop}px`,
       };
@@ -68,12 +67,21 @@ export default defineComponent({
         this.scaleFactor = newValue / 100.0;
       },
     },
+    pageWidth(): number {
+      return this.page?.getWidth() || 0;
+    },
+    pageHeight(): number {
+      return this.page?.getHeight() || 0;
+    },
   },
   watch: {
     scaleFactor() {
       this.arrangeCanvas();
     },
     autoScaleFactor() {
+      this.arrangeCanvas();
+    },
+    page() {
       this.arrangeCanvas();
     },
   },
@@ -87,31 +95,19 @@ export default defineComponent({
         this.scaleFactor =
           Math.floor(
             Math.min(
-              clientWidth / (this.width + 0),
-              clientHeight / (this.height + 0)
+              clientWidth / (this.pageWidth + 0),
+              clientHeight / (this.pageHeight + 0)
             ) * 100.0
           ) / 100.0;
       }
-      this.marginLeft = (clientWidth - this.scaleFactor * this.width) / 2.0;
-      this.marginTop = (clientHeight - this.scaleFactor * this.height) / 2.0;
+      this.marginLeft = (clientWidth - this.scaleFactor * this.pageWidth) / 2.0;
+      this.marginTop =
+        (clientHeight - this.scaleFactor * this.pageHeight) / 2.0;
     },
   },
   mounted() {
     window.addEventListener("resize", this.handleWindowResize);
     this.handleWindowResize();
-
-    const canvas = this.$refs.canvas as HTMLCanvasElement;
-
-    let page = new Page(1920, 1080);
-
-    for (let i = 0; i < 100; i++) {
-      const width = Math.random() * 190 + 10;
-      const height = Math.random() * 190 + 10;
-      const x = Math.random() * (1920 - width);
-      const y = Math.random() * (1080 - height);
-      page.addShape(new RectangleShape(x, y, width, height));
-    }
-    page.draw(canvas.getContext("2d") as CanvasRenderingContext2D);
   },
   beforeUnmount() {
     window.addEventListener("resize", this.handleWindowResize);
@@ -148,14 +144,6 @@ export default defineComponent({
   grid-row: 1;
   padding: 0px;
   overflow: scroll;
-}
-
-.canvas-wrapper > canvas {
-  background: black;
-  vertical-align: bottom;
-  transform-origin: 0 0;
-  width: 100px;
-  height: 100px;
 }
 
 .canvas-container > .status-bar {

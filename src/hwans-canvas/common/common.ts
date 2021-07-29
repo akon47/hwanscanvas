@@ -50,6 +50,15 @@ export class Color {
   b: number;
   a: number;
 
+  static randomColor(): Color {
+    return new Color(
+      Math.random() * 255,
+      Math.random() * 255,
+      Math.random() * 255,
+      255
+    );
+  }
+
   constructor(r?: number, g?: number, b?: number, a?: number) {
     this.r = r || 0;
     this.g = g || 0;

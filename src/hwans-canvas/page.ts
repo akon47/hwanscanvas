@@ -1,23 +1,84 @@
 import { BaseShape } from "./shapes/baseShape";
 
 export class Page {
-  width: number;
-  height: number;
-  shapes: Array<BaseShape>;
+  private width: number;
+  private height: number;
+  private shapes: Array<BaseShape>;
 
-  constructor(width: number, height: number) {
+  private renderTargetContext: CanvasRenderingContext2D | null;
+  private updateCount: number;
+
+  public constructor(width: number, height: number) {
     this.width = width;
     this.height = height;
     this.shapes = [];
+    this.renderTargetContext = null;
+    this.updateCount = 0;
   }
 
-  draw(context: CanvasRenderingContext2D): void {
-    for (const value of this.shapes) {
-      value.draw(context);
+  public draw(context: CanvasRenderingContext2D): void {
+    for (const shape of this.shapes) {
+      shape.draw(context);
     }
   }
 
-  addShape(shape: BaseShape): void {
+  public addShape(shape: BaseShape): void {
     this.shapes.push(shape);
+    this.onAddedShape(shape);
+  }
+
+  public removeShape(shape: BaseShape): boolean {
+    const index = this.shapes.indexOf(shape);
+    if (index >= 0) {
+      this.shapes.splice(index, 1);
+      this.onRemovedShape(shape);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public getWidth(): number {
+    return this.width;
+  }
+
+  public getHeight(): number {
+    return this.height;
+  }
+
+  public beginUpdate(): void {
+    this.updateCount++;
+  }
+
+  public endUpdate(): void {
+    this.updateCount--;
+    this.invalidate();
+  }
+
+  public setRenderTarget(canvas?: HTMLCanvasElement): void {
+    let context = null;
+    if (canvas) {
+      context = canvas.getContext("2d") as CanvasRenderingContext2D;
+    }
+    this.renderTargetContext = context;
+    this.invalidate();
+  }
+
+  public invalidate(): void {
+    if (this.renderTargetContext && this.updateCount <= 0) {
+      this.draw(this.renderTargetContext);
+    }
+  }
+
+  private onAddedShape(shape: BaseShape): void {
+    shape.oninvalidated = () => {
+      this.invalidate();
+    };
+    this.invalidate();
+  }
+
+  private onRemovedShape(shape: BaseShape): void {
+    shape.oninvalidated = null;
+    this.invalidate();
   }
 }

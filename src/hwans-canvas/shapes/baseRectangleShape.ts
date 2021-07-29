@@ -1,4 +1,5 @@
 import { BaseShape } from "./baseShape";
+import { BaseBrush } from "../brushes/baseBrush";
 
 export abstract class BaseRectangleShape extends BaseShape {
   protected x: number;
@@ -6,8 +7,15 @@ export abstract class BaseRectangleShape extends BaseShape {
   protected width: number;
   protected height: number;
 
-  constructor(x?: number, y?: number, width?: number, height?: number) {
-    super();
+  constructor(
+    fillBrush?: BaseBrush,
+    strokeBrush?: BaseBrush,
+    x?: number,
+    y?: number,
+    width?: number,
+    height?: number
+  ) {
+    super(fillBrush, strokeBrush);
     this.x = x || 0;
     this.y = y || 0;
     this.width = width || 0;

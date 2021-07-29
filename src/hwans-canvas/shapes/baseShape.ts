@@ -5,11 +5,19 @@ import { Color } from "../common/common";
 export abstract class BaseShape {
   protected fillBrush: BaseBrush;
   protected strokeBrush: BaseBrush;
+  public oninvalidated: (() => void) | null;
 
-  constructor() {
-    this.fillBrush = new SolidColorBrush(new Color(255, 255, 255, 255));
-    this.strokeBrush = new SolidColorBrush(new Color(255, 255, 255, 255));
+  constructor(fillBrush?: BaseBrush, strokeBrush?: BaseBrush) {
+    this.fillBrush =
+      fillBrush || new SolidColorBrush(new Color(255, 255, 255, 255));
+    this.strokeBrush =
+      strokeBrush || new SolidColorBrush(new Color(255, 255, 255, 255));
+    this.oninvalidated = null;
   }
 
   abstract draw(context: CanvasRenderingContext2D): void;
+
+  protected callOnInvalidated(): void {
+    this.oninvalidated?.();
+  }
 }

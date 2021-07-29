@@ -1,8 +1,16 @@
 import { BaseRectangleShape } from "./baseRectangleShape";
+import { BaseBrush } from "../brushes/baseBrush";
 
 export class RectangleShape extends BaseRectangleShape {
-  constructor(x?: number, y?: number, width?: number, height?: number) {
-    super(x, y, width, height);
+  constructor(
+    fillBrush?: BaseBrush,
+    strokeBrush?: BaseBrush,
+    x?: number,
+    y?: number,
+    width?: number,
+    height?: number
+  ) {
+    super(fillBrush, strokeBrush, x, y, width, height);
   }
 
   draw(context: CanvasRenderingContext2D): void {

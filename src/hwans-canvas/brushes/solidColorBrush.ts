@@ -9,6 +9,10 @@ export class SolidColorBrush extends BaseBrush {
     this.color = color;
   }
 
+  static randomColorBrush(): SolidColorBrush {
+    return new SolidColorBrush(Color.randomColor());
+  }
+
   getStyle(): string {
     return `#${(this.color.r + 0x100).toString(16).substr(-2)}${(
       this.color.g + 0x100
