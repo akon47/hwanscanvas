@@ -15,7 +15,9 @@ import { defineComponent } from "vue";
 import { BaseEditorTool } from "../../hwans-canvas/tools/baseEditorTool";
 import { EditorToolType } from "../../hwans-canvas/tools/editorToolType";
 import { EditorToolPointer } from "../../hwans-canvas/tools/editorToolPointer";
+import { EditorToolRectangleShape } from "../../hwans-canvas/tools/editorToolRectangleShape";
 import { Page } from "../../hwans-canvas/page";
+import { CursorType } from "@/hwans-canvas/common/common";
 
 interface EditorCanvasStyle {
   cursor: string;
@@ -29,12 +31,15 @@ export default defineComponent({
       type: Number,
       default: 1,
     },
+    selectedToolType: {
+      type: String,
+      default: EditorToolType.Pointer,
+    },
   },
   data() {
     return {
-      editorCursor: "default",
-      tools: {} as { [type: number]: BaseEditorTool },
-      selectedToolType: EditorToolType.Pointer,
+      editorCursor: CursorType.Arrow,
+      tools: {} as { [type: string]: BaseEditorTool },
     };
   },
   computed: {
@@ -50,7 +55,7 @@ export default defineComponent({
       return this.page?.getHeight() || 0;
     },
     selectedTool(): BaseEditorTool {
-      return this.tools[this.selectedToolType.valueOf()] as BaseEditorTool;
+      return this.tools[this.selectedToolType] as BaseEditorTool;
     },
   },
   watch: {
@@ -82,6 +87,7 @@ export default defineComponent({
           const canvas = this.$refs.editorCanvas as HTMLCanvasElement;
           newTool.setRenderTarget(canvas);
           newTool.setScaleFactor(this.scaleFactor);
+          this.editorCursor = newTool.onLoaded();
         }
       }
     },
@@ -92,25 +98,65 @@ export default defineComponent({
   methods: {
     mouseDown(x: number, y: number, buttons: number): void {
       if (this.page) {
-        this.selectedTool.onMouseDown(this.page, x, y, buttons);
-        this.editorCursor = this.selectedTool.getCursor();
+        const editorToolResult = this.selectedTool.onMouseDown(
+          this.page,
+          x,
+          y,
+          buttons
+        );
+        if (editorToolResult) {
+          if (editorToolResult.changedEditorToolType) {
+            this.$emit(
+              "update:selectedToolType",
+              editorToolResult.changedEditorToolType
+            );
+          }
+          this.editorCursor = editorToolResult.changedCursorType;
+        }
       }
     },
     mouseMove(x: number, y: number, buttons: number): void {
       if (this.page) {
-        this.selectedTool.onMouseMove(this.page, x, y, buttons);
-        this.editorCursor = this.selectedTool.getCursor();
+        const editorToolResult = this.selectedTool.onMouseMove(
+          this.page,
+          x,
+          y,
+          buttons
+        );
+        if (editorToolResult) {
+          if (editorToolResult.changedEditorToolType) {
+            this.$emit(
+              "update:selectedToolType",
+              editorToolResult.changedEditorToolType
+            );
+          }
+          this.editorCursor = editorToolResult.changedCursorType;
+        }
       }
     },
     mouseUp(x: number, y: number, buttons: number): void {
       if (this.page) {
-        this.selectedTool.onMouseUp(this.page, x, y, buttons);
-        this.editorCursor = this.selectedTool.getCursor();
+        const editorToolResult = this.selectedTool.onMouseUp(
+          this.page,
+          x,
+          y,
+          buttons
+        );
+        if (editorToolResult) {
+          if (editorToolResult.changedEditorToolType) {
+            this.$emit(
+              "update:selectedToolType",
+              editorToolResult.changedEditorToolType
+            );
+          }
+          this.editorCursor = editorToolResult.changedCursorType;
+        }
       }
     },
   },
   mounted() {
     this.tools[EditorToolType.Pointer] = new EditorToolPointer();
+    this.tools[EditorToolType.RectangleShape] = new EditorToolRectangleShape();
 
     this.$nextTick(function () {
       this.page?.setRenderTarget(this.$refs.canvas as HTMLCanvasElement);

@@ -1,4 +1,13 @@
+import { CursorType, Point, Rect } from "../common/common";
 import { Page } from "../page";
+import { BaseShape } from "../shapes/baseShape";
+import { EditorToolType } from "./editorToolType";
+
+export interface EditorToolResult {
+  changedCursorType: CursorType;
+  changedEditorToolType?: EditorToolType;
+  addedShape?: BaseShape;
+}
 
 export abstract class BaseEditorTool {
   private renderTargetContext?: CanvasRenderingContext2D;
@@ -17,27 +26,26 @@ export abstract class BaseEditorTool {
     this.invalidate();
   }
 
-  public abstract onLoaded(): void;
+  public abstract onLoaded(): CursorType;
 
   public abstract onMouseDown(
     page: Page,
     x: number,
     y: number,
     buttons: number
-  ): void;
+  ): EditorToolResult | null;
   public abstract onMouseMove(
     page: Page,
     x: number,
     y: number,
     buttons: number
-  ): void;
+  ): EditorToolResult | null;
   public abstract onMouseUp(
     page: Page,
     x: number,
     y: number,
     buttons: number
-  ): void;
-  public abstract getCursor(): string;
+  ): EditorToolResult | null;
 
   protected abstract draw(context: CanvasRenderingContext2D): void;
 
@@ -65,5 +73,48 @@ export abstract class BaseEditorTool {
       this.draw(this.renderTargetContext);
       this.renderTargetContext.restore();
     }
+  }
+
+  protected getHandleWidth(): number {
+    return 5 / (this.scaleFactor || 1);
+  }
+
+  protected getHandleLineWidth(): number {
+    return 2 / (this.scaleFactor || 1);
+  }
+
+  protected getHandleRect(point: Point): Rect {
+    const handleWidth = this.getHandleWidth();
+    return new Rect(
+      point.x - handleWidth,
+      point.y - handleWidth,
+      handleWidth * 2,
+      handleWidth * 2
+    );
+  }
+
+  protected drawHandles(
+    context: CanvasRenderingContext2D,
+    shaeps: Array<BaseShape>
+  ): void {
+    context.save();
+    context.fillStyle = "#f00";
+    context.strokeStyle = "#f00";
+    context.lineWidth = this.getHandleLineWidth();
+
+    for (const shape of shaeps) {
+      const bounds = shape.getBounds();
+      context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+      for (let i = 0; i < shape.getHandleCount(); i++) {
+        const handleRect = this.getHandleRect(shape.getHandle(i));
+        context.fillRect(
+          handleRect.x,
+          handleRect.y,
+          handleRect.width,
+          handleRect.height
+        );
+      }
+    }
+    context.restore();
   }
 }

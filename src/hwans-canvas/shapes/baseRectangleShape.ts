@@ -1,6 +1,6 @@
 import { BaseShape } from "./baseShape";
 import { BaseBrush } from "../brushes/baseBrush";
-import { Point, Rect } from "../common/common";
+import { CursorType, Point, Rect } from "../common/common";
 
 export abstract class BaseRectangleShape extends BaseShape {
   protected x: number;
@@ -33,23 +33,8 @@ export abstract class BaseRectangleShape extends BaseShape {
     );
   }
 
-  drawHandle(context: CanvasRenderingContext2D, scaleFactor?: number): void {
-    context.fillStyle = "#f00";
-    context.strokeStyle = "#f00";
-    context.lineWidth = 2 / (scaleFactor || 1);
-
-    const handleWidth = 5 / (scaleFactor || 1);
-
-    context.strokeRect(this.x, this.y, this.width, this.height);
-    for (let i = 0; i < this.getHandleCount(); i++) {
-      const handlePoint = this.getHandle(i);
-      context.fillRect(
-        handlePoint.x - handleWidth,
-        handlePoint.y - handleWidth,
-        handleWidth * 2,
-        handleWidth * 2
-      );
-    }
+  getBounds(): Rect {
+    return new Rect(this.x, this.y, this.width, this.height);
   }
 
   getHandleCount(): number {
@@ -95,9 +80,132 @@ export abstract class BaseRectangleShape extends BaseShape {
     return point;
   }
 
-  offset(x?: number, y?: number): void {
-    this.x += x || 0;
-    this.y += y || 0;
+  getHandleCursor(handleIndex: number): CursorType {
+    switch (handleIndex) {
+      case 0:
+        return CursorType.SizeNWSE;
+      case 1:
+        return CursorType.SizeNS;
+      case 2:
+        return CursorType.SizeNESW;
+      case 3:
+        return CursorType.SizeWE;
+      case 4:
+        return CursorType.SizeNWSE;
+      case 5:
+        return CursorType.SizeNS;
+      case 6:
+        return CursorType.SizeNESW;
+      case 7:
+        return CursorType.SizeWE;
+      default:
+        return CursorType.Arrow;
+    }
+  }
+
+  moveHandleTo(point: Point, handleIndex: number): number {
+    let left = this.x;
+    let top = this.y;
+    let right = this.x + this.width;
+    let bottom = this.y + this.height;
+
+    switch (handleIndex) {
+      case 0:
+        left = point.x;
+        top = point.y;
+        break;
+      case 1:
+        top = point.y;
+        break;
+      case 2:
+        right = point.x;
+        top = point.y;
+        break;
+      case 3:
+        right = point.x;
+        break;
+      case 4:
+        right = point.x;
+        bottom = point.y;
+        break;
+      case 5:
+        bottom = point.y;
+        break;
+      case 6:
+        left = point.x;
+        bottom = point.y;
+        break;
+      case 7:
+        left = point.x;
+        break;
+    }
+
+    if (left > right) {
+      switch (handleIndex) {
+        case 0:
+          handleIndex = 2;
+          break;
+        case 2:
+          handleIndex = 0;
+          break;
+        case 3:
+          handleIndex = 7;
+          break;
+        case 4:
+          handleIndex = 6;
+          break;
+        case 6:
+          handleIndex = 4;
+          break;
+        case 7:
+          handleIndex = 3;
+          break;
+      }
+    }
+
+    if (top > bottom) {
+      switch (handleIndex) {
+        case 0:
+          handleIndex = 6;
+          break;
+        case 1:
+          handleIndex = 5;
+          break;
+        case 2:
+          handleIndex = 4;
+          break;
+        case 4:
+          handleIndex = 2;
+          break;
+        case 5:
+          handleIndex = 1;
+          break;
+        case 6:
+          handleIndex = 0;
+          break;
+      }
+    }
+
+    this.setLocation(
+      left <= right ? left : right,
+      top <= bottom ? top : bottom,
+      Math.abs(right - left),
+      Math.abs(bottom - top)
+    );
+    return handleIndex;
+  }
+
+  setLocation(x: number, y: number, width: number, height: number): void {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.invalidate();
+  }
+
+  offset(x: number, y: number): void {
+    this.x += x;
+    this.y += y;
     this.invalidate();
   }
 }

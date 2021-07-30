@@ -1,12 +1,17 @@
 <template>
   <div class="editor-canvas-container">
-    <div class="tools">tools</div>
+    <div class="tools">
+      <button @click="selectTool('pointer')">Pointer</button>
+      <button @click="selectTool('rectangle-shape')">Rectangle</button>
+      {{ selectedToolType }}
+    </div>
     <div class="canvas-container">
       <div class="canvas-wrapper" ref="canvasWrapper">
         <div :style="canvasStyle">
           <page-editor-canvas
             :page="page"
             :scaleFactor="scaleFactor"
+            v-model:selectedToolType="selectedToolType"
           ></page-editor-canvas>
         </div>
       </div>
@@ -31,6 +36,7 @@
 import { defineComponent } from "vue";
 import PageEditorCanvas from "./PageEditorCanvas.vue";
 import { Page } from "../../hwans-canvas/page";
+import { EditorToolType } from "@/hwans-canvas/tools/editorToolType";
 
 interface CanvasStyle {
   width: string;
@@ -51,6 +57,7 @@ export default defineComponent({
       marginLeft: 0,
       marginTop: 0,
       autoScaleFactor: true,
+      selectedToolType: EditorToolType.Pointer,
     };
   },
   computed: {
@@ -106,6 +113,9 @@ export default defineComponent({
       this.marginLeft = (clientWidth - this.scaleFactor * this.pageWidth) / 2.0;
       this.marginTop =
         (clientHeight - this.scaleFactor * this.pageHeight) / 2.0;
+    },
+    selectTool(toolType: EditorToolType) {
+      this.selectedToolType = toolType;
     },
   },
   mounted() {

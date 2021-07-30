@@ -1,6 +1,6 @@
 import { BaseBrush } from "../brushes/baseBrush";
 import { SolidColorBrush } from "../brushes/solidColorBrush";
-import { Color, Rect, Point } from "../common/common";
+import { Color, Rect, Point, CursorType } from "../common/common";
 
 export abstract class BaseShape {
   protected fillBrush: BaseBrush;
@@ -17,17 +17,28 @@ export abstract class BaseShape {
 
   abstract draw(context: CanvasRenderingContext2D): void;
 
-  abstract drawHandle(
-    context: CanvasRenderingContext2D,
-    scaleFactor?: number
-  ): void;
   abstract getHandleCount(): number;
   abstract getHandle(handleIndex: number): Point;
+  abstract getHandleCursor(handleIndex: number): CursorType;
+  abstract moveHandleTo(point: Point, handleIndex: number): number;
+
+  public handleOffset(dx: number, dy: number, handleIndex: number): number {
+    if (handleIndex >= 0 && handleIndex < this.getHandleCount()) {
+      const handlePoint = this.getHandle(handleIndex);
+      return this.moveHandleTo(
+        new Point(handlePoint.x + dx, handlePoint.y + dy),
+        handleIndex
+      );
+    }
+    return -1;
+  }
+
+  abstract getBounds(): Rect;
 
   abstract contains(point: Point): boolean;
   abstract intersectsWith(rect: Rect): boolean;
 
-  abstract offset(x?: number, y?: number): void;
+  abstract offset(x: number, y: number): void;
 
   protected invalidate(): void {
     this.oninvalidated?.();

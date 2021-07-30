@@ -1,3 +1,4 @@
 export enum EditorToolType {
-  Pointer,
+  Pointer = "pointer",
+  RectangleShape = "rectangle-shape",
 }

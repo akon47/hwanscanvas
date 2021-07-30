@@ -26,9 +26,9 @@ export default defineComponent({
   mounted() {
     this.page = new Page(1920, 1080);
     this.page?.beginUpdate();
-    for (let i = 0; i < 100; i++) {
-      const width = Math.random() * 190 + 10;
-      const height = Math.random() * 190 + 10;
+    for (let i = 0; i < 10; i++) {
+      const width = Math.random() * 300 + 100;
+      const height = Math.random() * 300 + 100;
       const x = Math.random() * (1920 - width);
       const y = Math.random() * (1080 - height);
       this.page?.addShape(

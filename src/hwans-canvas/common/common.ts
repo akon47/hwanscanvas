@@ -92,3 +92,15 @@ export class Color {
     this.a = a || 1;
   }
 }
+
+export enum CursorType {
+  Arrow = "default",
+  None = "none",
+  SizeWE = "w-resize",
+  SizeNWSE = "nw-resize",
+  SizeNS = "s-resize",
+  SizeNESW = "ne-resize",
+  SizeAll = "all-scroll",
+  Hand = "grab",
+  Cross = "crosshair",
+}

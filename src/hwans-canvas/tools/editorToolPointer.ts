@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Point, Rect } from "../common/common";
+import { CursorType, Point, Rect } from "../common/common";
 import { Page } from "../page";
 import { BaseShape } from "../shapes/baseShape";
-import { BaseEditorTool } from "./baseEditorTool";
+import { BaseEditorTool, EditorToolResult } from "./baseEditorTool";
 
 interface HitInfo {
   shape?: BaseShape;
@@ -17,45 +17,74 @@ enum SelectionMode {
 }
 
 export class EditorToolPointer extends BaseEditorTool {
-  private cursor: string;
   private selectionBoxPoint1: Point;
   private selectionBoxPoint2: Point;
   private downPoint: Point;
   private movePoint: Point;
+  private downHandleIndex: number;
+  private downHandleShape?: BaseShape;
   private selectionMode: SelectionMode;
   private selectedShapes: Array<BaseShape>;
 
   constructor() {
     super();
-    this.cursor = "default";
     this.selectionMode = SelectionMode.None;
     this.selectionBoxPoint1 = new Point();
     this.selectionBoxPoint2 = new Point();
+    this.downHandleIndex = -1;
+    this.downHandleShape = undefined;
     this.downPoint = new Point();
     this.movePoint = new Point();
     this.selectedShapes = [];
   }
 
-  public onLoaded(): void {
-    this.cursor = "default";
+  public onLoaded(): CursorType {
     this.selectedShapes = [];
     this.selectionMode = SelectionMode.None;
+    this.invalidate();
+    return CursorType.Arrow;
   }
 
-  public onMouseDown(page: Page, x: number, y: number, buttons: number): void {
+  private getCursor(page: Page, point: Point): CursorType {
+    const hitInfo = this.makeHitTest(page, this.movePoint);
+    if (hitInfo.shape) {
+      if (hitInfo.handleIndex >= 0) {
+        return hitInfo.shape.getHandleCursor(hitInfo.handleIndex);
+      } else {
+        return CursorType.SizeAll;
+      }
+    } else {
+      return CursorType.Arrow;
+    }
+  }
+
+  public onMouseDown(
+    page: Page,
+    x: number,
+    y: number,
+    buttons: number
+  ): EditorToolResult | null {
+    const editorToolResult = {
+      changedCursorType: CursorType.Arrow,
+    } as EditorToolResult;
+
     this.downPoint = new Point(x, y);
 
     if (buttons == 1) {
       const hitInfo = this.makeHitTest(page, this.downPoint);
       if (hitInfo.shape) {
         if (hitInfo.handleIndex >= 0) {
-          console.log("handle down");
+          this.selectedShapes = [hitInfo.shape];
           this.selectionMode = SelectionMode.HandleMove;
+          this.downHandleIndex = hitInfo.handleIndex;
+          this.downHandleShape = hitInfo.shape;
+          editorToolResult.changedCursorType = CursorType.Cross;
         } else {
           if (this.selectedShapes.indexOf(hitInfo.shape) < 0) {
             this.selectedShapes = [hitInfo.shape];
           }
           this.selectionMode = SelectionMode.ShapeMove;
+          editorToolResult.changedCursorType = CursorType.SizeAll;
         }
       } else {
         this.selectedShapes = [];
@@ -66,37 +95,56 @@ export class EditorToolPointer extends BaseEditorTool {
     }
 
     this.invalidate();
+    return editorToolResult;
   }
 
-  public onMouseMove(page: Page, x: number, y: number, buttons: number): void {
+  public onMouseMove(
+    page: Page,
+    x: number,
+    y: number,
+    buttons: number
+  ): EditorToolResult | null {
+    const editorToolResult = {
+      changedCursorType: CursorType.Arrow,
+    } as EditorToolResult;
+
     this.movePoint = new Point(x, y);
 
     switch (this.selectionMode) {
-      case SelectionMode.None: {
-        const hitInfo = this.makeHitTest(page, this.movePoint);
-        if (buttons == 0) {
-          if (hitInfo.shape) {
-            this.cursor = "all-scroll";
-          } else {
-            this.cursor = "default";
-          }
-        }
+      case SelectionMode.None:
+        editorToolResult.changedCursorType = this.getCursor(
+          page,
+          this.movePoint
+        );
         break;
-      }
       case SelectionMode.GroupSelection:
         if (buttons == 1) {
-          this.cursor = "default";
+          editorToolResult.changedCursorType = CursorType.Arrow;
           this.selectionBoxPoint2 = this.movePoint;
         }
         break;
       case SelectionMode.ShapeMove:
+        editorToolResult.changedCursorType = CursorType.SizeAll;
+        break;
+      case SelectionMode.HandleMove:
+        editorToolResult.changedCursorType = CursorType.Cross;
         break;
     }
 
     this.invalidate();
+    return editorToolResult;
   }
 
-  public onMouseUp(page: Page, x: number, y: number, buttons: number): void {
+  public onMouseUp(
+    page: Page,
+    x: number,
+    y: number,
+    buttons: number
+  ): EditorToolResult | null {
+    const editorToolResult = {
+      changedCursorType: CursorType.Arrow,
+    } as EditorToolResult;
+
     const cursorPoint = new Point(x, y);
 
     switch (this.selectionMode) {
@@ -123,14 +171,19 @@ export class EditorToolPointer extends BaseEditorTool {
         }
         break;
       }
+      case SelectionMode.HandleMove: {
+        const dx = this.movePoint.x - this.downPoint.x;
+        const dy = this.movePoint.y - this.downPoint.y;
+        if ((dx != 0 || dy != 0) && this.downHandleShape) {
+          this.downHandleShape.handleOffset(dx, dy, this.downHandleIndex);
+        }
+        break;
+      }
     }
 
     this.selectionMode = SelectionMode.None;
     this.invalidate();
-  }
-
-  public getCursor(): string {
-    return this.cursor;
+    return editorToolResult;
   }
 
   private getSelectionRect(): Rect {
@@ -144,12 +197,7 @@ export class EditorToolPointer extends BaseEditorTool {
 
   protected draw(context: CanvasRenderingContext2D): void {
     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-
-    for (const shape of this.selectedShapes) {
-      context.save();
-      shape.drawHandle(context, this.scaleFactor);
-      context.restore();
-    }
+    this.drawHandles(context, this.selectedShapes);
 
     switch (this.selectionMode) {
       case SelectionMode.GroupSelection: {
@@ -184,10 +232,37 @@ export class EditorToolPointer extends BaseEditorTool {
         }
         break;
       }
+      case SelectionMode.HandleMove: {
+        const dx = this.movePoint.x - this.downPoint.x;
+        const dy = this.movePoint.y - this.downPoint.y;
+        if ((dx != 0 || dy != 0) && this.downHandleShape) {
+          const handleIndex = this.downHandleShape.handleOffset(
+            dx,
+            dy,
+            this.downHandleIndex
+          );
+          context.globalAlpha = 0.5;
+          this.downHandleShape.draw(context);
+          this.downHandleShape.handleOffset(-dx, -dy, handleIndex);
+        }
+        break;
+      }
     }
   }
 
   makeHitTest(page: Page, cursorPoint: Point): HitInfo {
+    for (const shape of this.selectedShapes) {
+      for (let i = 0; i < shape.getHandleCount(); i++) {
+        const handleRect = this.getHandleRect(shape.getHandle(i));
+        if (handleRect.contains(cursorPoint)) {
+          return {
+            shape: shape,
+            handleIndex: i,
+          };
+        }
+      }
+    }
+
     let hitShape = undefined;
     let hitHandleIndex = -1;
 
