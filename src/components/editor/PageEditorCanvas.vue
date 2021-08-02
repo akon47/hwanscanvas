@@ -16,6 +16,7 @@ import { BaseEditorTool } from "../../hwans-canvas/tools/baseEditorTool";
 import { EditorToolType } from "../../hwans-canvas/tools/editorToolType";
 import { EditorToolPointer } from "../../hwans-canvas/tools/editorToolPointer";
 import { EditorToolRectangleShape } from "../../hwans-canvas/tools/editorToolRectangleShape";
+import { EditorToolEllipseShape } from "../../hwans-canvas/tools/editorToolEllipseShape";
 import { Page } from "../../hwans-canvas/page";
 import { CursorType } from "@/hwans-canvas/common/common";
 
@@ -157,6 +158,7 @@ export default defineComponent({
   mounted() {
     this.tools[EditorToolType.Pointer] = new EditorToolPointer();
     this.tools[EditorToolType.RectangleShape] = new EditorToolRectangleShape();
+    this.tools[EditorToolType.EllipseShape] = new EditorToolEllipseShape();
 
     this.$nextTick(function () {
       this.page?.setRenderTarget(this.$refs.canvas as HTMLCanvasElement);

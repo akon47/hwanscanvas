@@ -23,6 +23,14 @@ export abstract class BaseRectangleShape extends BaseShape {
     this.height = height || 0;
   }
 
+  getCenterX(): number {
+    return this.x + this.width / 2.0;
+  }
+
+  getCenterY(): number {
+    return this.y + this.height / 2.0;
+  }
+
   contains(point: Point): boolean {
     return new Rect(this.x, this.y, this.width, this.height).contains(point);
   }

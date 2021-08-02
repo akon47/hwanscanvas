@@ -5,6 +5,8 @@ import { Color, Rect, Point, CursorType } from "../common/common";
 export abstract class BaseShape {
   protected fillBrush: BaseBrush;
   protected strokeBrush: BaseBrush;
+  protected name: string;
+
   public oninvalidated: (() => void) | null;
 
   constructor(fillBrush?: BaseBrush, strokeBrush?: BaseBrush) {
@@ -13,6 +15,15 @@ export abstract class BaseShape {
     this.strokeBrush =
       strokeBrush || new SolidColorBrush(new Color(255, 255, 255, 255));
     this.oninvalidated = null;
+    this.name = "";
+  }
+
+  getName(): string {
+    return this.name;
+  }
+
+  setName(name: string): void {
+    this.name = name;
   }
 
   abstract draw(context: CanvasRenderingContext2D): void;

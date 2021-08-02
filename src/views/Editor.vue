@@ -3,20 +3,30 @@
     <div class="editor-canvas">
       <editor-canvas :page="page"></editor-canvas>
     </div>
-    <div class="editor-tools">tools</div>
-    <div class="editor-timeline">timeline</div>
+    <div class="editor-tools">
+      <shape-prop-editor></shape-prop-editor>
+    </div>
+    <div class="editor-timeline">
+      <timeline-editor></timeline-editor>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import EditorCanvas from "@/components/editor/PageEditor.vue";
+import ShapePropEditor from "@/components/editor/ShapePropEditor.vue";
+import TimelineEditor from "@/components/editor/timeline/TimelineEditor.vue";
 import { RectangleShape } from "../hwans-canvas/shapes/rectangleShape";
 import { SolidColorBrush } from "../hwans-canvas/brushes/solidColorBrush";
 import { Page } from "../hwans-canvas/page";
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  components: { EditorCanvas },
+  components: {
+    EditorCanvas,
+    ShapePropEditor,
+    TimelineEditor,
+  },
   name: "Editor",
   data() {
     return {

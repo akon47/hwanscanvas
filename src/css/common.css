@@ -27,7 +27,7 @@
   min-width: 0px;
 }
 
-/* ::-webkit-scrollbar {
+::-webkit-scrollbar {
   width: 15px;
   height: 15px;
   scroll-margin-bottom: 0;
@@ -52,4 +52,4 @@
 
 ::-webkit-scrollbar-corner {
   background-color: transparent;
-} */
+}

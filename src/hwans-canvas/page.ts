@@ -40,6 +40,10 @@ export class Page {
     }
   }
 
+  public getShapes(): Array<BaseShape> {
+    return this.shapes;
+  }
+
   public getShapeCount(): number {
     return this.shapes.length;
   }

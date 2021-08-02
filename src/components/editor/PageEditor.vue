@@ -1,9 +1,24 @@
 <template>
   <div class="editor-canvas-container">
     <div class="tools">
-      <button @click="selectTool('pointer')">Pointer</button>
-      <button @click="selectTool('rectangle-shape')">Rectangle</button>
-      {{ selectedToolType }}
+      <button
+        @click="selectTool('pointer')"
+        :class="{ selected: selectedToolType == 'pointer' }"
+      >
+        <font-awesome-icon :icon="['fas', 'mouse-pointer']" />
+      </button>
+      <button
+        @click="selectTool('rectangle-shape')"
+        :class="{ selected: selectedToolType == 'rectangle-shape' }"
+      >
+        <font-awesome-icon :icon="['fas', 'square-full']" />
+      </button>
+      <button
+        @click="selectTool('ellipse-shape')"
+        :class="{ selected: selectedToolType == 'ellipse-shape' }"
+      >
+        <font-awesome-icon :icon="['fas', 'circle']" />
+      </button>
     </div>
     <div class="canvas-container">
       <div class="canvas-wrapper" ref="canvasWrapper">
@@ -25,7 +40,8 @@
             max="200"
             :disabled="autoScaleFactor"
           />
-          <input type="checkbox" v-model="autoScaleFactor" />
+          <input id="fit" type="checkbox" v-model="autoScaleFactor" />
+          <label for="fit">자동 맞춤</label>
         </div>
       </div>
     </div>
@@ -172,5 +188,23 @@ export default defineComponent({
 .status-bar > .scale-factor {
   flex-grow: 0;
   flex-shrink: 1;
+  margin-right: 5px;
+}
+
+.tools button {
+  width: calc(100% - 6px);
+  height: 44px;
+  margin: 3px;
+  padding: 5px;
+  background: transparent;
+  border: transparent;
+  color: gray;
+  transition: 0.3s;
+}
+.tools button:hover,
+.tools button.selected {
+  color: white;
+  border: 1px solid white;
+  transition: 0.3s;
 }
 </style>
