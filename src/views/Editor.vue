@@ -7,7 +7,7 @@
       <shape-prop-editor></shape-prop-editor>
     </div>
     <div class="editor-timeline">
-      <timeline-editor></timeline-editor>
+      <timeline-editor :page="page"></timeline-editor>
     </div>
   </div>
 </template>
@@ -16,10 +16,9 @@
 import EditorCanvas from "@/components/editor/PageEditor.vue";
 import ShapePropEditor from "@/components/editor/ShapePropEditor.vue";
 import TimelineEditor from "@/components/editor/timeline/TimelineEditor.vue";
-import { RectangleShape } from "../hwans-canvas/shapes/rectangleShape";
-import { SolidColorBrush } from "../hwans-canvas/brushes/solidColorBrush";
 import { Page } from "../hwans-canvas/page";
 import { defineComponent } from "vue";
+import { BaseShape } from "@/hwans-canvas/shapes/baseShape";
 
 export default defineComponent({
   components: {
@@ -31,28 +30,11 @@ export default defineComponent({
   data() {
     return {
       page: null as Page | null,
+      selectedShapes: null as Array<BaseShape> | null,
     };
   },
   mounted() {
     this.page = new Page(1920, 1080);
-    this.page?.beginUpdate();
-    for (let i = 0; i < 10; i++) {
-      const width = Math.random() * 300 + 100;
-      const height = Math.random() * 300 + 100;
-      const x = Math.random() * (1920 - width);
-      const y = Math.random() * (1080 - height);
-      this.page?.addShape(
-        new RectangleShape(
-          SolidColorBrush.randomColorBrush(),
-          undefined,
-          x,
-          y,
-          width,
-          height
-        )
-      );
-    }
-    this.page?.endUpdate();
   },
 });
 </script>
